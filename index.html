@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a002a">
+<title>Valentine 💗</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body{
+  height:100%;
+}
+
+body{
+  min-height:100dvh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:"Segoe UI", sans-serif;
+  overflow:hidden;
+  color:#dda0ff;
+  position:relative;
+  background: linear-gradient(160deg, #1a002a, #2e0045);
+  background-size: 400% 400%;
+  animation: bgShift 30s ease infinite;
+  padding:20px;
+}
+
+@keyframes bgShift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+}
+
+/* CARD */
+.card{
+  background: rgba(50,0,50,0.92);
+  width:100%;
+  max-width:420px;
+  padding:30px 24px;
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 25px 50px rgba(0,0,0,0.4);
+  z-index:2;
+  position:relative;
+  backdrop-filter: blur(10px);
+}
+
+h2{
+  margin-bottom:16px;
+  font-size:20px;
+  line-height:1.4;
+}
+
+p{
+  font-size:14px;
+  margin-bottom:12px;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  margin-bottom:14px;
+  text-align:center;
+  font-size:16px;
+  background:#3a0c55;
+  color:#e0b3ff;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border-radius:22px;
+  border:none;
+  background:#bb33ff;
+  color:#fff;
+  cursor:pointer;
+  font-size:16px;
+  transition: transform 0.2s;
+}
+
+button:active{
+  transform:scale(0.97);
+}
+
+.error{
+  font-size:13px;
+  min-height:18px;
+  margin-top:8px;
+  color:#ff99ff;
+}
+
+/* HEART */
+.heart{
+  font-size:clamp(70px, 18vw, 110px);
+  cursor:pointer;
+  user-select:none;
+  margin-bottom:10px;
+  position:relative;
+  z-index:3;
+  animation: floatHeart 3s ease-in-out infinite;
+  transition: transform 0.2s, text-shadow 0.2s;
+}
+
+.heart.glow {
+  text-shadow: 0 0 20px #ef72c5, 0 0 40px #ff33ff, 0 0 60px #bb33ff;
+}
+
+.heart.clicking {
+  transform: scale(1.15);
+}
+
+@keyframes floatHeart {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.message{
+  min-height:70px;
+  font-size:15px;
+  line-height:1.5;
+  margin-top:8px;
+  white-space:pre-wrap;
+}
+
+.hint{
+  font-size:12px;
+  opacity:0.7;
+  margin-top:6px;
+}
+
+.float-heart{
+  position:absolute;
+  font-size:22px;
+  pointer-events:none;
+  z-index:1;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- LOCK SCREEN -->
+<div class="card" id="lockScreen">
+  <h2>🔒 PRIVATE CARD - Shhhhh 🤫</h2>
+  <p>Enter the name of the person who owns my Heart</p>
+  <input id="nameInput" placeholder="Type the name…" autocomplete="off"/>
+  <button onclick="unlock()">Unlock</button>
+  <div class="error" id="error"></div>
+</div>
+
+<!-- HEART SCREEN -->
+<div class="card" id="heartScreen" style="display:none;">
+  <div class="heart" id="heart" onclick="nextMessage()">❤️</div>
+  <div class="message" id="message"></div>
+  <div class="hint" id="hint">(click the heart)</div>
+</div>
+
+<script>
+/* =========================
+   💜 CARD LOGIC
+========================= */
+const correctName = "Sudaroli";
+
+const messages = [
+  "You are the perfect one for me. ONLY FOR ME 😏.",
+  "Somehow you always feel like HOME to me 🤗.",
+  "I choose you — on the good days and the hard ones ✨.",
+  "I'm glad that we went from 1% to 100% 🥰. I LOVE YOU 💘",
+  "This Heart is yours 💯. HAPPY VALENTINE'S DAY ❤"
+];
+
+let index = 0;
+let typing = false;
+
+function unlock(){
+  const input = nameInput.value.trim().toLowerCase();
+  if(input === correctName.toLowerCase()){
+    lockScreen.style.display="none";
+    heartScreen.style.display="block";
+  } else {
+    error.textContent="OH NO! My heart says that’s not it. Try another 💭";
+  }
+}
+
+function typeText(text){
+  const el = message;
+  el.textContent="";
+  let i=0;
+  typing=true;
+
+  const interval=setInterval(()=>{
+    el.textContent+=text[i++];
+    if(i===text.length){
+      clearInterval(interval);
+      typing=false;
+    }
+  },35);
+}
+
+function nextMessage(){
+  if(typing || index>=messages.length) return;
+
+  heart.classList.remove("clicking");
+  void heart.offsetWidth;
+  heart.classList.add("clicking");
+
+  if(index < messages.length - 1) {
+    heart.classList.add("glow");
+    setTimeout(() => heart.classList.remove("glow"), 500);
+  }
+
+  typeText(messages[index]);
+  spawnHearts();
+  index++;
+
+  if(index === messages.length){
+    heart.classList.add("glow");
+    hint.textContent="locked in 💜";
+  }
+}
+
+/* =========================
+   💖 FLOATING HEARTS
+========================= */
+function spawnHearts(){
+  for(let i=0;i<12;i++){
+    const h=document.createElement("div");
+    h.className="float-heart";
+    h.textContent="💜";
+    h.style.left = Math.random() * window.innerWidth + "px";
+    h.style.top = Math.random() * window.innerHeight + "px";
+
+    const angle=Math.random()*2*Math.PI;
+    const distance=50+Math.random()*120;
+    const dx=Math.cos(angle)*distance;
+    const dy=Math.sin(angle)*distance;
+
+    h.style.transform=`translate(${dx}px, ${dy}px)`;
+    h.style.transition="transform 1s ease-out, opacity 1s";
+    document.body.appendChild(h);
+
+    setTimeout(()=>{
+      h.style.opacity=0;
+      setTimeout(()=>h.remove(),1000);
+    },50);
+  }
+}
+
+/* =========================
+   🌌 DREAMY BACKGROUND
+========================= */
+const canvas=document.getElementById("bgCanvas");
+const ctx=canvas.getContext("2d");
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+class Particle{
+  constructor(){
+    this.reset();
+  }
+
+  reset(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.radius=Math.random()*2+0.5;
+    this.speedY=Math.random()*0.3+0.05;
+    this.speedX=(Math.random()-0.5)*0.1;
+    this.alpha=Math.random();
+    this.twinkleSpeed=Math.random()*0.02+0.01;
+  }
+
+  update(){
+    this.y -= this.speedY;
+    this.x += this.speedX;
+
+    this.alpha += this.twinkleSpeed*(Math.random()<0.5?-1:1);
+    this.alpha=Math.max(0,Math.min(1,this.alpha));
+
+    if(this.y<0) this.y=canvas.height;
+    if(this.x<0) this.x=canvas.width;
+    if(this.x>canvas.width) this.x=0;
+  }
+
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+    ctx.fillStyle=`rgba(221,160,255,${this.alpha})`;
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+const particles=[];
+for(let i=0;i<200;i++){
+  particles.push(new Particle());
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>
